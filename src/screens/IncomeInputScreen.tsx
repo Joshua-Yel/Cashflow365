@@ -165,7 +165,7 @@ const analyzeIncomeWithAI = useCallback(() => {
 
     setShowAIInsights(true);
   }, 1000);
-}, [amount, category, categories, language, generateAISuggestions]); // ✅ Now includes it!
+}, [amount, category, categories, generateAISuggestions]); // ✅ Now includes it!
 
   // AI-powered income analysis
   useEffect(() => {

@@ -153,7 +153,7 @@ const HomeScreen: React.FC = () => {
     return () => {
       subscriptions.forEach((unsubscribe) => unsubscribe());
     };
-  }, [categoryIcons]);
+  }, []);
 
   // Combine and sort recent transactions
   useEffect(() => {

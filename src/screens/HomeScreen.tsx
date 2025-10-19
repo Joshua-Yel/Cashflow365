@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ref, onValue } from "firebase/database";
 import { auth, db } from "../firebaseConfig";
@@ -40,8 +40,8 @@ const HomeScreen: React.FC = () => {
   const [topCategories, setTopCategories] = useState<any[]>([]);
   const navigate = useNavigate();
 
-  // Category icons mapping
-  const categoryIcons: Record<string, string> = {
+  // Memoized category icons to prevent re-renders
+  const categoryIcons: Record<string, string> = useMemo(() => ({
     food: "🍔",
     transport: "🚗",
     shopping: "🛍️",
@@ -55,7 +55,7 @@ const HomeScreen: React.FC = () => {
     investment: "📈",
     gift: "🎁",
     other: "💳",
-  };
+  }), []);
 
   useEffect(() => {
     const user = auth.currentUser;
@@ -153,7 +153,7 @@ const HomeScreen: React.FC = () => {
     return () => {
       subscriptions.forEach((unsubscribe) => unsubscribe());
     };
-  }, []);
+  }, [categoryIcons]);
 
   // Combine and sort recent transactions
   useEffect(() => {
@@ -486,21 +486,21 @@ const HomeScreen: React.FC = () => {
               {language === "EN" ? "Quick Add" : "Mabilis"}
             </p>
           </button>
-           <button
+          <button
             onClick={() => navigate("/expense-input")}
-            className="card text-center hover:shadow-lg transition-shadow"
+            className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all"
           >
             <div className="text-3xl mb-2">💸</div>
-            <p className="font-semibold">
+            <p className="font-semibold text-gray-800">
               {language === "EN" ? "Add Expense" : "Magdagdag ng Gastos"}
             </p>
           </button>
           <button
             onClick={() => navigate("/income-input")}
-            className="card text-center hover:shadow-lg transition-shadow"
+            className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all"
           >
             <div className="text-3xl mb-2">💰</div>
-            <p className="font-semibold">
+            <p className="font-semibold text-gray-800">
               {language === "EN" ? "Add Income" : "Magdagdag ng Kita"}
             </p>
           </button>
@@ -513,15 +513,6 @@ const HomeScreen: React.FC = () => {
               {language === "EN" ? "Budget" : "Budget"}
             </p>
           </button>
-          {/* <button
-            onClick={() => navigate("/profile")}
-            className="bg-gradient-to-br from-gray-500 to-gray-600 text-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all"
-          >
-            <div className="text-3xl mb-2">👤</div>
-            <p className="font-semibold">
-              {language === "EN" ? "Profile" : "Profile"}
-            </p>
-          </button> */}
         </div>
       </div>
 

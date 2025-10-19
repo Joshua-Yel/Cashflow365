@@ -85,38 +85,87 @@ const IncomeInputScreen: React.FC = () => {
     { id: "other", label: language === "EN" ? "📎 Other" : "📎 Iba pa" },
   ];
 
-  const analyzeIncomeWithAI = useCallback(() => {
-    const incomeAmount = parseFloat(amount);
-    if (!incomeAmount) return;
 
-    const selectedCategory = categories.find((cat) => cat.id === category);
-    if (!selectedCategory) return;
 
-    // Simulate AI analysis
-    setTimeout(() => {
-      // Mock data for savings goal
-      const savingsGoal = 5000;
-      const currentSavings = 1500;
-      const dailySavingsRate = 50;
+  // Move this ABOVE the useCallback
+const generateAISuggestions = (
+  incomeAmount: number,
+  selectedCategory: Category
+) => {
+  const suggestions = [];
 
-      const newSavings = currentSavings + incomeAmount * 0.2; // Assume 20% is saved
-      const daysToGoalBefore =
-        (savingsGoal - currentSavings) / dailySavingsRate;
-      const daysToGoalAfter = (savingsGoal - newSavings) / dailySavingsRate;
+  if (selectedCategory.id === "salary") {
+    suggestions.push({
+      type: "tip",
+      text:
+        language === "EN"
+          ? `Consider allocating ₱${(incomeAmount * 0.2).toFixed(0)} (20%) to your emergency fund.`
+          : `Isaalang-alang na ilaan ang ₱${(incomeAmount * 0.2).toFixed(0)} (20%) sa iyong emergency fund.`,
+    });
+  }
 
-      setPredictedImpact({
-        balanceIncrease: incomeAmount,
-        savingsBoost: ((incomeAmount * 0.2) / savingsGoal) * 100,
-        daysToNextGoal: Math.round(daysToGoalBefore - daysToGoalAfter),
-      });
+  if (selectedCategory.id === "side_hustle" && incomeAmount > 1000) {
+    suggestions.push({
+      type: "insight",
+      text:
+        language === "EN"
+          ? "This side hustle is performing well. Have you thought about reinvesting a portion to grow it?"
+          : "Maganda ang kita ng raket na ito. Naisip mo na bang i-reinvest ang isang bahagi para palaguin ito?",
+    });
+  }
 
-      // Generate AI suggestions
-      const suggestions = generateAISuggestions(incomeAmount, selectedCategory);
-      setAiSuggestions(suggestions);
+  if (selectedCategory.id === "gifts") {
+    suggestions.push({
+      type: "tip",
+      text:
+        language === "EN"
+          ? "A surprise gift! This could be a great opportunity to pay off a small debt or treat yourself."
+          : "Isang sorpresang regalo! Magandang pagkakataon ito para magbayad ng maliit na utang o i-treat ang sarili.",
+    });
+  }
 
-      setShowAIInsights(true);
-    }, 1000);
-  }, [amount, category, categories, language]);
+  if (incomeAmount > 5000) {
+    suggestions.push({
+      type: "insight",
+      text:
+        language === "EN"
+          ? "This is a significant amount. Review your financial goals to see where this can make the most impact."
+          : "Malaking halaga ito. Suriin ang iyong mga financial goals para makita kung saan ito magkakaroon ng pinakamalaking epekto.",
+    });
+  }
+
+  return suggestions;
+};
+
+// Then define useCallback
+const analyzeIncomeWithAI = useCallback(() => {
+  const incomeAmount = parseFloat(amount);
+  if (!incomeAmount) return;
+
+  const selectedCategory = categories.find((cat) => cat.id === category);
+  if (!selectedCategory) return;
+
+  setTimeout(() => {
+    const savingsGoal = 5000;
+    const currentSavings = 1500;
+    const dailySavingsRate = 50;
+
+    const newSavings = currentSavings + incomeAmount * 0.2;
+    const daysToGoalBefore = (savingsGoal - currentSavings) / dailySavingsRate;
+    const daysToGoalAfter = (savingsGoal - newSavings) / dailySavingsRate;
+
+    setPredictedImpact({
+      balanceIncrease: incomeAmount,
+      savingsBoost: ((incomeAmount * 0.2) / savingsGoal) * 100,
+      daysToNextGoal: Math.round(daysToGoalBefore - daysToGoalAfter),
+    });
+
+    const suggestions = generateAISuggestions(incomeAmount, selectedCategory);
+    setAiSuggestions(suggestions);
+
+    setShowAIInsights(true);
+  }, 1000);
+}, [amount, category, categories, language, generateAISuggestions]); // ✅ Now includes it!
 
   // AI-powered income analysis
   useEffect(() => {
@@ -128,56 +177,6 @@ const IncomeInputScreen: React.FC = () => {
       setAiSuggestions([]);
     }
   }, [amount, category, language, analyzeIncomeWithAI]);
-
-  const generateAISuggestions = (incomeAmount: number, selectedCategory: Category) => {
-    const suggestions = [];
-
-    if (selectedCategory.id === "salary") {
-      suggestions.push({
-        type: "tip",
-        text:
-          language === "EN"
-            ? `Consider allocating ₱${(incomeAmount * 0.2).toFixed(
-                0
-              )} (20%) to your emergency fund.`
-            : `Isaalang-alang na ilaan ang ₱${(incomeAmount * 0.2).toFixed(
-                0
-              )} (20%) sa iyong emergency fund.`,
-      });
-    }
-
-    if (selectedCategory.id === "side_hustle" && incomeAmount > 1000) {
-      suggestions.push({
-        type: "insight",
-        text:
-          language === "EN"
-            ? "This side hustle is performing well. Have you thought about reinvesting a portion to grow it?"
-            : "Maganda ang kita ng raket na ito. Naisip mo na bang i-reinvest ang isang bahagi para palaguin ito?",
-      });
-    }
-
-    if (selectedCategory.id === "gifts") {
-      suggestions.push({
-        type: "tip",
-        text:
-          language === "EN"
-            ? "A surprise gift! This could be a great opportunity to pay off a small debt or treat yourself."
-            : "Isang sorpresang regalo! Magandang pagkakataon ito para magbayad ng maliit na utang o i-treat ang sarili.",
-      });
-    }
-
-    if (incomeAmount > 5000) {
-      suggestions.push({
-        type: "insight",
-        text:
-          language === "EN"
-            ? "This is a significant amount. Review your financial goals to see where this can make the most impact."
-            : "Malaking halaga ito. Suriin ang iyong mga financial goals para makita kung saan ito magkakaroon ng pinakamalaking epekto.",
-      });
-    }
-
-    return suggestions;
-  };
 
   const handleSaveIncome = async () => {
     if (!amount || !category) {
